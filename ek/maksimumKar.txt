@@ -1,0 +1,12 @@
+İstanbul
+Mesafe: 77.84349774230606
+Kocaeli
+Kocaeli
+Mesafe: 49.924101661927416
+Sakarya
+Sakarya
+Mesafe: 97.33732406085849
+Bolu
+Bolu
+Mesafe: 130.46789954676024
+Ankara

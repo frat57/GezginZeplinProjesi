@@ -1,0 +1,83 @@
+10 kişi için
+İstanbul
+Mesafe: 77.84349774230606
+Kocaeli
+Kocaeli
+Mesafe: 49.924101661927416
+Sakarya
+Sakarya
+Mesafe: 97.33732406085849
+Bolu
+Bolu
+Mesafe: 130.46789954676024
+Ankara
+20 kişi için
+İstanbul
+Mesafe: 77.84349774230606
+Kocaeli
+Kocaeli
+Mesafe: 49.924101661927416
+Sakarya
+Sakarya
+Mesafe: 97.33732406085849
+Bolu
+Bolu
+Mesafe: 130.46789954676024
+Ankara
+30 kişi için
+İstanbul
+Mesafe: 77.84349774230606
+Kocaeli
+Kocaeli
+Mesafe: 49.924101661927416
+Sakarya
+Sakarya
+Mesafe: 97.33732406085849
+Bolu
+Bolu
+Mesafe: 130.46789954676024
+Ankara
+40 kişi için
+İstanbul
+Mesafe: 122.58177488537962
+Tekirdağ
+Tekirdağ
+Mesafe: 130.9510935570841
+Çanakkale
+Çanakkale
+Mesafe: 137.3533764368827
+Balıkesir
+Balıkesir
+Mesafe: 121.89533233810944
+Bursa
+Bursa
+Mesafe: 88.3873131880254
+Bilecik
+Bilecik
+Mesafe: 49.690732114349835
+Eskişehir
+Eskişehir
+Mesafe: 199.84529116311705
+Ankara
+50 kişi için
+İstanbul
+Mesafe: 122.58177488537962
+Tekirdağ
+Tekirdağ
+Mesafe: 130.9510935570841
+Çanakkale
+Çanakkale
+Mesafe: 137.3533764368827
+Balıkesir
+Balıkesir
+Mesafe: 121.89533233810944
+Bursa
+Bursa
+Mesafe: 88.3873131880254
+Bilecik
+Bilecik
+Mesafe: 49.690732114349835
+Eskişehir
+Eskişehir
+Mesafe: 199.84529116311705
+Ankara

@@ -1,0 +1,562 @@
+package gui;
+
+import javafx.application.Application;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.Circle;
+import javafx.scene.text.Text;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import node.DosyaIslem;
+import node.Sehir;
+import node.YolHesap;
+
+public class MainObject extends Application{
+
+	private ObservableList<String> options = FXCollections.observableArrayList("Maksimum Kâr", "%50 kâr");
+	private static ObservableList<String> city = FXCollections.observableArrayList();
+	final private Image mapImage = new Image("file:..\\..\\ek\\Harita.png");
+	
+	public static void main(String[] args) {
+		System.out.println("Basladý");
+		DosyaIslem.sehirler();
+		System.err.println("minHesap debug layer");
+		
+		DosyaIslem.sehirAdi(city);
+		DosyaIslem.sehirKomsuluk();
+		
+		YolHesap y1 = new YolHesap();
+		double zeplinMasraf=100;//1000km de
+		double biletFiyat = 20;
+		y1.minMaliyet(DosyaIslem.plakadanSehirBul(34), DosyaIslem.plakadanSehirBul(73), 5);
+		//y1.maksimumKar(DosyaIslem.plakadanSehirBul(34), DosyaIslem.plakadanSehirBul(6), zeplinMasraf, biletFiyat);
+		//y1.elliKar(DosyaIslem.plakadanSehirBul(34), DosyaIslem.plakadanSehirBul(6), zeplinMasraf);
+		launch(args);	
+	}
+
+	@Override
+	public void start(Stage stage) throws Exception {
+		double zeplinMasraf=10;//100km de 1000 se kilometrede 1 masraf olur km/lira
+		double biletFiyat = 20;
+		//Read from file
+		DosyaIslem.sehirler();
+		DosyaIslem.sehirAdi(city);
+		DosyaIslem.sehirKomsuluk();
+		DosyaIslem.sehirResim();
+		//main frame
+		HBox mainLayout = new HBox();//left and right frames will go in there
+		//left frame
+		HBox leftFrame = new HBox();
+		ImageView mapView = new ImageView();
+		mapView.setImage(mapImage);
+		leftFrame.getChildren().add(mapView);
+		//right frame
+		VBox rightFrame = new VBox();
+		ComboBox optionBox = new ComboBox(options);
+		
+		//bottom layer has two options
+		GridPane bottomFrame = new GridPane();
+		optionBox.getSelectionModel().selectedItemProperty().addListener(
+		(ObservableValue observable, Object oldValue, Object newValue) -> {
+			//First clear right side of the window
+			bottomFrame.getChildren().clear();
+			
+			bottomFrame.setVgap(10);
+			bottomFrame.setHgap(40);
+			ComboBox primCity = new ComboBox(city);
+			ComboBox destCity = new ComboBox(city);
+			Button opt1Button = new Button("Gönder");
+			bottomFrame.add(new Text("Kalkýþ Noktasý"), 0, 0);
+			bottomFrame.add(primCity, 0, 1);
+			bottomFrame.add(new Text("Varýþ Noktasý"), 1, 0);
+			bottomFrame.add(destCity, 1, 1);
+			String number[] = new String[46];
+			for(int i=5, j=0;i<51;i++, j++) {number[j] = Integer.toString(i);}
+			
+			if(newValue.equals(options.get(0))) {
+				bottomFrame.add(opt1Button, 0, 3);
+				bottomFrame.add(new Text("Sabit Bilet Fiyatý: " + biletFiyat), 0, 4);
+				
+				opt1Button.setOnAction(event -> {
+					if( primCity.getSelectionModel().getSelectedItem() == null ||
+						destCity.getSelectionModel().getSelectedItem() == null ) {
+						mesajPenceresi("kalkýþ ve varýþ sehirleri secmeyi unutmayýn");
+					}
+					else if( primCity.getSelectionModel().getSelectedItem() == destCity.getSelectionModel().getSelectedItem() ) {
+						mesajPenceresi("kalkýþ ve varýþ noktalarý ayný olamaz");
+					}
+					else {	
+						bottomFrame.add(new Text("Kâr için yolcu sayýsý: "), 0, 5);
+						Sehir ist = DosyaIslem.plakadanSehirBul(primCity.getSelectionModel().getSelectedIndex()+1);
+						Sehir koc = DosyaIslem.plakadanSehirBul(destCity.getSelectionModel().getSelectedIndex()+1);
+						System.out.println("ilk sehrimiz " + ist.getIsim() + "\nikinci sehrimiz "  +koc.getIsim() + "\nAralarýndaki yatay mesafe "
+								+ ist.mesafeHesap(koc) + "\nRakým farký " + (ist.getRakim()-koc.getRakim()) + "\nRakým hesabý(ara adým) " +
+								ist.rakimHesap(koc, 1) + "\nMaliyeti " + ist.maliyetHesap(koc, 2)
+								+ "\naradaki min gereken açý " + Math.toDegrees(Math.atan((Math.abs(koc.getRakim()-ist.getRakim())+50)/ ist.mesafeHesap(koc))) );
+						System.out.println("prim city komsularý" );
+						for(int i=0; i<DosyaIslem.komsuluk[primCity.getSelectionModel().getSelectedIndex()+1].length; i++) {
+							//System.out.println(DosyaIslem.komsuluk[primCity.getSelectionModel().getSelectedIndex()+1][i]);
+						}
+						//cizimPenceresi(YolHesap.cizimYolu);
+						YolHesap y1 = new YolHesap();
+						y1.maksimumKar(DosyaIslem.plakadanSehirBul(primCity.getSelectionModel().getSelectedIndex()+1), DosyaIslem.plakadanSehirBul(destCity.getSelectionModel().getSelectedIndex()+1), zeplinMasraf, biletFiyat);
+					}
+						
+				});
+			}
+			else {
+				bottomFrame.add(new Text("Yolcu sayýsý:"), 0, 3);
+				bottomFrame.add(opt1Button, 0, 4);
+				opt1Button.setOnAction(event -> {
+					
+					if( primCity.getSelectionModel().getSelectedItem() == null ||
+						destCity.getSelectionModel().getSelectedItem() == null ) {
+						mesajPenceresi("kalkýþ ve varýþ sehirleri secmeyi unutmayýn");
+					}
+					else if( primCity.getSelectionModel().getSelectedItem() == destCity.getSelectionModel().getSelectedItem() ) {
+						mesajPenceresi("kalkýþ ve varýþ noktalarý ayný olamaz");
+					}
+					else {	
+						bottomFrame.add(new Text("Kâr için yolcu sayýsý: "), 0, 5);
+						//cizimPenceresi(YolHesap.cizimYolu);
+					}
+				});
+			}
+		});
+		
+		rightFrame.getChildren().addAll(optionBox, bottomFrame);
+		mainLayout.getChildren().addAll(leftFrame, rightFrame);
+		
+		//Scene 
+		Scene scene = new Scene(mainLayout, 800, 300);
+		stage.setScene(scene);
+		stage.setTitle("Zeplin");
+		stage.setResizable(false);
+		stage.show();
+	}
+	
+	public void mesajPenceresi(String msg) {
+		Stage window = new Stage();
+		VBox layout = new VBox();
+		Label text = new Label(msg);
+		
+		layout.getChildren().add(text);
+		layout.setAlignment(Pos.CENTER);
+		Scene scene = new Scene(layout, 300, 50);
+		window.initModality(Modality.APPLICATION_MODAL);
+		window.setScene(scene);
+		window.setTitle("Hata");
+		window.show();
+	}
+	
+	public void cizimPenceresi(int[] yol) {
+		Stage window = new Stage();
+		Group layout = new Group();
+		AnchorPane anchor = new AnchorPane();
+		Image image = new Image("file:..\\..\\ek\\harita-buyuk.png");
+		ImageView mapView = new ImageView();
+		mapView.setImage(image);
+		anchor.getChildren().add(mapView);
+		int window_w = 1000;
+		int window_h = 450;
+		
+		Line line = new Line(0, 0, 0, 0);
+		line.setStrokeWidth(2);
+		line.setFill(null);
+		line.setStroke(Color.BLACK);
+		Circle circle = new Circle(0, 0, 0);
+		circle.setStroke(Color.BLACK);
+		//circle.setFill(null);
+		circle.setStrokeWidth(2);
+		int genislik = 9;
+		for(int i=0; i<yol.length-1; i++) {
+			Sehir s = DosyaIslem.plakadanSehirBul(yol[i]);
+			Sehir ite = DosyaIslem.plakadanSehirBul(yol[i+1]);
+			
+			circle = new Circle(s.image_x, s.image_y, genislik);
+			line= new Line(s.image_x, s.image_y, ite.image_x, ite.image_y);
+			anchor.getChildren().addAll(circle, line);
+		}
+		Sehir s = DosyaIslem.plakadanSehirBul(yol[yol.length-1]);	
+		circle = new Circle(s.image_x, s.image_y, genislik);
+		
+		Scene scene = new Scene(anchor, window_w, window_h);
+		window.setScene(scene);
+		window.setTitle("Gidilen Yol");
+		window.show();
+	}
+}
+
+package node;
+
+import java.util.ArrayList;
+
+public class YolHesap {
+	//gidilen sehirler
+	public double maliyetD[] = new double[81];
+	public static int cizimYolu[];
+
+	/*
+	 * gidimeyeceði yollarý false yapmak için ikinci bir komsuluk matrisi olusturuyoruz
+	 * public boolean komsuluk[][] = DosyaIslem.komsuluk;
+	 */
+	
+	public double minMaliyet(Sehir kalkis, Sehir varis, int yolcu) {
+		//999999 = sonsuzluk
+		for(int i=0; i<81; i++)	maliyetD[i] = 999999;
+		maliyetD[kalkis.getPlaka()-1] = 0;
+		
+		//cýkan yollarý bul
+		ArrayList<Sehir> sira = new ArrayList<Sehir>();
+		sira.clear();
+		int siraIndex = 0;
+		System.out.println("Kalkis sehri " + kalkis.getIsim());
+
+		for(int i=0; i<DosyaIslem.komsuluk[kalkis.getPlaka()-1].length; i++) {
+			Sehir araSehir = DosyaIslem.plakadanSehirBul(DosyaIslem.komsuluk[kalkis.getPlaka()-1][i]);
+			double maliyet = kalkis.maliyetHesap(araSehir, 0);
+			if(kalkis.aciHesap(araSehir, 0) <= 80-yolcu && maliyet+maliyetD[kalkis.getPlaka()-1] < maliyetD[araSehir.getPlaka()-1]) {
+				//System.out.println(araSehir.getIsim() + " Maliyet: " + maliyet);
+				//geldiði yol
+				araSehir.gidilenYol = new int[1];
+				araSehir.gidilenYol[0] = kalkis.getPlaka();
+				
+				maliyetD[araSehir.getPlaka()-1] = maliyet;
+				//kalkis ile varis komsu sehir olma durumu
+				if(araSehir == varis) {
+					System.out.println("Son Maliyet: " + maliyetD[varis.getPlaka()-1]);
+					return maliyetD[varis.getPlaka()-1];
+				}
+				sira.add(araSehir);
+			}
+		}
+		
+		for(siraIndex=0; siraIndex<sira.size(); siraIndex++) {
+			Sehir araSehir = sira.get(siraIndex);
+			double maliyet;
+			for(int i =0; i<DosyaIslem.komsuluk[araSehir.getPlaka()-1].length; i++) {
+				Sehir sonrakiSehir = DosyaIslem.plakadanSehirBul(DosyaIslem.komsuluk[araSehir.getPlaka()-1][i]);
+				if(sonrakiSehir == varis) maliyet = araSehir.maliyetHesap(sonrakiSehir, 2);
+				else					  maliyet = araSehir.maliyetHesap(sonrakiSehir, 1);
+				if(araSehir.aciHesap(sonrakiSehir, 0) <= 80-yolcu && maliyet+maliyetD[araSehir.getPlaka()-1] < maliyetD[sonrakiSehir.getPlaka()-1] && maliyet+maliyetD[araSehir.getPlaka()-1] < maliyetD[varis.getPlaka()-1]) {
+					System.out.println(sonrakiSehir.getIsim() + " Maliyet: " + (maliyet+maliyetD[araSehir.getPlaka()-1]));
+					sonrakiSehir.gidilenYol = new int[araSehir.gidilenYol.length+1];
+					//geldiði yol
+					for(int j=0; j<araSehir.gidilenYol.length; j++) sonrakiSehir.gidilenYol[j] = araSehir.gidilenYol[j];
+					sonrakiSehir.gidilenYol[araSehir.gidilenYol.length] = araSehir.getPlaka();
+					
+					maliyetD[sonrakiSehir.getPlaka()-1] = maliyet+maliyetD[araSehir.getPlaka()-1];
+					//varýþa geldiyse
+					if(sonrakiSehir== varis) continue;
+					sira.add(sonrakiSehir);
+				}
+			}
+		}
+		
+		if(maliyetD[varis.getPlaka()-1] == 999999) {
+			System.out.println("Sehre gidilemiyor");
+			return 999999;
+		}
+		System.out.println("Son Maliyet: " + maliyetD[varis.getPlaka()-1]);
+		System.out.println("Geldiði yol");
+		for(int i=0; i<varis.gidilenYol.length; i++)	System.out.print(varis.gidilenYol[i]+ ", ");
+		System.out.println(varis.getPlaka());
+		
+		cizimYolu = new int[varis.gidilenYol.length+1];
+		for(int i=0; i<varis.gidilenYol.length; i++)	cizimYolu[i] = varis.gidilenYol[i];
+		cizimYolu[cizimYolu.length-1] = varis.getPlaka();
+		
+		return maliyetD[varis.getPlaka()-1];
+	}
+	
+	public void maksimumKar(Sehir kalkis, Sehir varis, double masraf, double bilet) {
+		int yolcuSayisi = 5;
+		int kar_yolcuSayisi=5;
+		double min = (bilet*yolcuSayisi) - (minMaliyet(kalkis, varis, yolcuSayisi)*masraf);
+		if(min == 999999) {
+			System.out.println("Sehre ulaþýlamýyor");
+			return;
+		}// yolcu sayisi x20 max kar ?
+		for(yolcuSayisi=6; yolcuSayisi<=50; yolcuSayisi++) {
+			System.out.println(yolcuSayisi);
+			double temp = (bilet*yolcuSayisi) - (minMaliyet(kalkis, varis, yolcuSayisi)*masraf);
+			if( min >  temp) {
+				min = temp;
+				kar_yolcuSayisi = yolcuSayisi;
+			}
+		}
+		System.out.println("\nMaksimum kar: " + min);
+		System.out.println("Maksimum kar için yolcu sayisi: " + kar_yolcuSayisi);
+		DosyaIslem.maksimumKarYaz(kalkis, varis, kar_yolcuSayisi);
+	}
+	
+	public void elliKar(Sehir kalkis, Sehir varis, double masraf) {
+		double fiyat[] = new double[5];
+		int j=0;
+		for(int i=10; i<=50; i+=10) {
+			fiyat[j] = masraf* minMaliyet(kalkis, varis, i)/i;
+					j++;
+		}
+		j=0;
+		for(int i=10; i<=50; i+=10) {
+			System.out.println(i + " kiþi için " + fiyat[j] + " alýnmalý");
+					j++;
+		}
+		DosyaIslem.elliKarYaz(kalkis, varis);
+	}
+}
+
+package node;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import javafx.collections.ObservableList;
+
+public class DosyaIslem {
+
+	private static Sehir[] sehir = new Sehir[81];
+	public static int[][] komsuluk = new int[81][];
+	
+	public static int getKomsuluk(int i, int j) {return komsuluk[i-1][j-1];}
+	public static Sehir plakadanSehirBul(int plaka) {return sehir[plaka-1];}
+	
+	//ilk constructorla oluþturduðumuz sehirleri maine atýcaðýz
+	public static void sehirler() {	
+		try {
+			FileReader fr = new FileReader("file:..\\..\\ek\\lat-long.txt");
+			BufferedReader br = new BufferedReader(fr);
+			
+			String satir;
+			//ilk satirý es geç
+			br.readLine();
+			//Dosyanýn sonuna kadar oku ve sehir objelerini oluþtur
+			for(int i=0; (satir = br.readLine()) != null; i++) {
+				String[] satirEleman = satir.split(",");
+				sehir[i] = new Sehir(Double.parseDouble(satirEleman[0]), Double.parseDouble(satirEleman[1]), Integer.parseInt(satirEleman[2]), Integer.parseInt(satirEleman[3]));
+			}
+		} catch(IOException io) {
+			System.out.println("lat-long.txt okunurken hata");
+		}
+	}
+	
+	//sehir adlarýný ekle
+	public static void sehirAdi(ObservableList<String> city) {
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream("file:..\\..\\ek\\Sehir.txt"), "UTF-8") );
+			
+			String satir;
+			while((satir = br.readLine()) != null) {
+				String[] satirEleman = satir.split(" ");
+				int plaka = Integer.parseInt(satirEleman[0]);
+				sehir[plaka-1].setIsim(satirEleman[1]);
+				city.add(satirEleman[1]);
+			}
+		} catch(IOException io) {
+			System.out.println("Sehir.txt okunurken hata");
+		}
+	}
+	
+	public static void sehirKomsuluk() {
+		FileReader fr;
+		try {
+			fr = new FileReader("file:..\\..\\ek\\komsuluklar.txt");
+			BufferedReader br = new BufferedReader(fr);
+			String satir;
+			//ilk satirý atla
+			br.readLine();
+			//Komsuluk matrisi olusturma
+			while((satir=br.readLine()) != null) {
+				String[] satirEleman = satir.split(",");
+				int sehir_index = Integer.parseInt(satirEleman[0]);
+				komsuluk[sehir_index-1] = new int[satirEleman.length-1];
+				for(int i=1; i<satirEleman.length; i++) {
+					int eleman = Integer.parseInt(satirEleman[i]);
+					komsuluk[sehir_index-1][i-1] = eleman;
+				}
+			}
+			
+		} catch (IOException e) {
+			System.out.println("komsuluklar.txt okunurken hata");
+		}
+		
+	}
+	
+	public static void maksimumKarYaz(Sehir kalkis, Sehir varis, int yolcuSayisi) {
+		YolHesap y1 = new YolHesap();
+		y1.minMaliyet(kalkis, varis, yolcuSayisi);
+		File maksimum = new File("file:..\\..\\ek\\maksimumKar.txt");
+		try {
+			if (!maksimum.exists()) maksimum.createNewFile();
+				FileWriter fileWriter = new FileWriter(maksimum, false);
+		        BufferedWriter bWriter = new BufferedWriter(fileWriter);
+		        for(int i=0; i<YolHesap.cizimYolu.length-1; i++) {
+		        	bWriter.write(plakadanSehirBul(YolHesap.cizimYolu[i]).getIsim() +"\n");
+		        	bWriter.write("Mesafe: " + plakadanSehirBul(YolHesap.cizimYolu[i]).mesafeHesap(plakadanSehirBul(YolHesap.cizimYolu[i+1])));
+		        	bWriter.write("\n" +plakadanSehirBul(YolHesap.cizimYolu[i+1]).getIsim()+"\n");
+		        }
+		        bWriter.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+	
+	public static void elliKarYaz(Sehir kalkis, Sehir varis) {
+		YolHesap y1 = new YolHesap();
+		
+		File maksimum = new File("file:..\\..\\ek\\elliKar.txt");
+		try {
+			if (!maksimum.exists()) maksimum.createNewFile();
+				FileWriter fileWriter = new FileWriter(maksimum, false);
+		        BufferedWriter bWriter = new BufferedWriter(fileWriter);
+		        for(int yolcu=10; yolcu<=50; yolcu+=10) {
+		        	y1.minMaliyet(kalkis, varis, yolcu);
+		        	bWriter.write(yolcu + " kiþi için\n");
+		        	for(int i=0; i<YolHesap.cizimYolu.length-1; i++) {
+			        	bWriter.write(plakadanSehirBul(YolHesap.cizimYolu[i]).getIsim() +"\n");
+			        	bWriter.write("Mesafe: " + plakadanSehirBul(YolHesap.cizimYolu[i]).mesafeHesap(plakadanSehirBul(YolHesap.cizimYolu[i+1])));
+			        	bWriter.write("\n" +plakadanSehirBul(YolHesap.cizimYolu[i+1]).getIsim()+"\n");
+			        }
+		        }
+		        bWriter.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	}
+	
+	//sehirleri harita resminde göstermek için koordinatlar
+	public static void sehirResim() {
+		FileReader fr;
+		try {
+			fr = new FileReader("file:..\\..\\ek\\koordinat.txt");
+			BufferedReader br = new BufferedReader(fr);
+			String satir;
+			int i=1;
+			while((satir=br.readLine()) != null) {
+				String[] satirEleman = satir.split(",");
+				double x = Double.parseDouble(satirEleman[0]);
+				double y = Double.parseDouble(satirEleman[1]);
+				plakadanSehirBul(i).image_x=x;
+				plakadanSehirBul(i).image_y=y;
+				i++;
+			}
+			
+		} catch (IOException e) {
+			System.out.println("koordinatlar.txt okunurken hata");
+		}
+	}
+
+}
+package node;
+
+public class Sehir {
+
+	private String isim; 
+	private int plaka;
+	private double lat, log, rakim;
+	public int gidilenYol[];
+	
+	public double image_x, image_y;
+	
+	//ilk olarak lat-long.txt okunacak
+	public Sehir(double lat, double log, int plaka, int rakim) {
+		this.plaka = plaka;
+		this.lat = lat;
+		this.log = log;
+		this.rakim = rakim;
+	}
+
+	public void setIsim(String isim) {
+		this.isim = isim;
+	}
+	
+	public String getIsim() {
+		return isim;
+	}
+
+	public int getPlaka() {
+		return plaka;
+	}
+
+	public double getLat() {
+		return lat;
+	}
+
+	public double getLog() {
+		return log;
+	}
+
+	public double getRakim() {
+		return rakim;
+	}
+	
+	//diðer fonksiyonlar
+	public double mesafeHesap(Sehir iki) {
+		double a, c, latFark, logFark;
+		double R = 6371;
+		latFark = Math.toRadians(iki.lat-this.lat);
+		logFark = Math.toRadians(iki.log-this.log);
+		
+		a = Math.pow(Math.sin(latFark/2), 2)
+			+ Math.pow(Math.sin(logFark/2), 2) * Math.cos(Math.toRadians(this.lat)) * Math.cos(Math.toRadians(iki.lat));
+		c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+		return R * c;
+	}
+	
+	/* kalkýs	a-(b+50)
+	 * ara adým	(a+50) - (b+50) ->> a -b
+	 * varýs	(a+50)-b
+	 */
+	public double rakimHesap(Sehir iki, int durum) {
+		if(durum == 0)
+			return this.rakim - iki.rakim +50;
+		else if(durum == 1) 
+			return this.rakim - iki.rakim;
+		//else
+		return this.rakim - iki.rakim -50;
+	}
+
+	public double maliyetHesap(Sehir iki, int durum) {
+		double mesafe = this.mesafeHesap(iki);
+		double yukseklik = this.rakimHesap(iki, durum)/1000;//km
+		//System.out.println(yol + "      +" + Math.pow(yukseklik, 2));
+		return Math.sqrt( Math.pow(mesafe, 2) + Math.pow(yukseklik, 2) );
+	}
+	
+	public double aciHesap(Sehir iki, int durum) {
+		double mesafe = this.mesafeHesap(iki);
+		double rakim = this.rakimHesap(iki, durum);
+		return Math.toDegrees(Math.atan(rakim/mesafe));
+	}
+	
+	/* public boolean komsulukKontrol(Sehir iki) {
+		if(DosyaIslem.getKomsuluk(this.plaka, iki.plaka) == true)	return true;
+		//else
+		return false;
+	} */
+	
+}
